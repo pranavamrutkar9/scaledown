@@ -2,6 +2,14 @@
 
 ScaleDown is an intelligent prompt compression framework that reduces LLM token usage while preserving semantic meaning.
 
+## Key Features
+
+*   **HASTE Optimizer**: Intelligently selects relevant code using AST analysis and semantic search.
+*   **Context Compression**: Rewrites prompts to be dense and token-efficient using the ScaleDown API.
+*   **Modular Pipeline**: Chain optimizers and compressors for custom workflows.
+*   **Easy Integration**: Drop-in Python client for seamless usage.
+
+---
 ## Installation
 
 Install using `uv` (recommended) or `pip`:
@@ -12,6 +20,7 @@ From PyPI (if published):
 ```bash
 pip install scaledown
 ```
+*(Requires `HasteContext` for local optimization: `pip install HasteContext>=0.2.1`)*
 
 ---
 
@@ -115,7 +124,38 @@ broadcast_results = compressor.compress(context=docs, prompt=query)
 for res in broadcast_results:
     print(res)
 ```
+### Pipeline example
+```python
+import scaledown as sd
+from scaledown.optimizer import HasteOptimizer
+from scaledown.compressor import ScaleDownCompressor
+from scaledown.pipeline import Pipeline
+```
 
+1. Initialize Components
+```python
+optimizer = HasteOptimizer(top_k=5, semantic=True)
+compressor = ScaleDownCompressor(target_model="gpt-4o")
+```
+2. Create Pipeline
+```python
+pipe = Pipeline([
+('haste', optimizer),
+('compressor', compressor)
+])
+```
+3. Run on your code file
+```python
+result = pipe.run(
+query="Explain the training loop",
+file_path="my_model.py",
+prompt="Summarize the key logic"
+)
+
+print(f"Original Tokens: {len(result.original_content) // 4} (approx)")
+print(f"Final Tokens: {result.metrics['total_tokens']}")
+print(f"Optimized Content:\n{result.final_content}")
+```
 ---
 
 ## Error handling
