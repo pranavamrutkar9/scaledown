@@ -173,16 +173,20 @@ if st.button("Evaluate Candidate", type="primary", use_container_width=True):
                     with col_a:
                         st.subheader("✅ Matched Skills")
                         if match_data["matched_skills"]:
+                            html_content = ""
                             for skill in match_data["matched_skills"]:
-                                st.markdown(f'<span class="skill-tag matched">{skill}</span>', unsafe_allow_html=True)
+                                html_content += f'<span class="skill-tag matched">{skill}</span>'
+                            st.markdown(html_content, unsafe_allow_html=True)
                         else:
                             st.write("No matches.")
                             
                     with col_b:
                         st.subheader("❌ Missing Skills")
                         if match_data["missing_skills"]:
+                            html_content = ""
                             for skill in match_data["missing_skills"]:
-                                st.markdown(f'<span class="skill-tag missing">{skill}</span>', unsafe_allow_html=True)
+                                html_content += f'<span class="skill-tag missing">{skill}</span>'
+                            st.markdown(html_content, unsafe_allow_html=True)
                         else:
                             st.write("None.")
                     
