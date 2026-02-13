@@ -62,35 +62,21 @@ st.markdown("Powered by **ScaleDown** & OpenAI")
 with st.sidebar:
     st.header("Configuration")
     
-    # Provider Selection
-    provider = st.radio("Select Logic Provider", ["OpenAI", "Groq (Free)"], index=1)
+    # Configuration
+    st.info("Using Groq (Free Tier) for Logic.")
+    os.environ["LLM_PROVIDER"] = "groq"
+        
+    # Check session state or env
+    default_groq = st.session_state.get("GROQ_API_KEY", os.getenv("GROQ_API_KEY", ""))
     
-    if provider == "Groq (Free)":
-        os.environ["LLM_PROVIDER"] = "groq"
+    api_key = st.text_input("Groq API Key", type="password", value=default_groq, placeholder="gsk-...")
+    
+    if api_key:
+        os.environ["GROQ_API_KEY"] = api_key
+        st.session_state["GROQ_API_KEY"] = api_key
+        st.success("Groq Key Set!")
         
-        # Check session state or env
-        default_groq = st.session_state.get("GROQ_API_KEY", os.getenv("GROQ_API_KEY", ""))
-        
-        api_key = st.text_input("Groq API Key", type="password", value=default_groq, placeholder="gsk-...")
-        
-        if api_key:
-            os.environ["GROQ_API_KEY"] = api_key
-            st.session_state["GROQ_API_KEY"] = api_key
-            st.success("Groq Key Set!")
-            
-        st.markdown("[Get Free Groq Key](https://console.groq.com/keys)")
-    else:
-        os.environ["LLM_PROVIDER"] = "openai"
-        
-        # Check session state or env
-        default_openai = st.session_state.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY", ""))
-        
-        api_key = st.text_input("OpenAI API Key", type="password", value=default_openai, placeholder="sk-...")
-        
-        if api_key:
-            os.environ["OPENAI_API_KEY"] = api_key
-            st.session_state["OPENAI_API_KEY"] = api_key
-            st.success("OpenAI Key Set!")
+    st.markdown("[Get Free Groq Key](https://console.groq.com/keys)")
     
     st.info("Upload a resume and paste the job description to get a detailed analysis.")
 

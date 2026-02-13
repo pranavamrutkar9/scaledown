@@ -15,23 +15,25 @@ if scaledown_path not in sys.path:
     sys.path.append(scaledown_path)
 
 # LLM Configuration
-LLM_PROVIDER = os.getenv("LLM_PROVIDER", "openai").lower() # 'openai' or 'groq'
+# LLM Configuration
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "groq").lower()
 
 # API Keys
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# OPENAI_API_KEY is no longer used by default
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 if LLM_PROVIDER == "groq":
+    # Default to Groq
     if not GROQ_API_KEY:
-        print("WARNING: GROQ_API_KEY is not set.")
+        print("Waiting for GROQ_API_KEY...")
     LLM_API_KEY = GROQ_API_KEY
     LLM_BASE_URL = "https://api.groq.com/openai/v1"
-    LLM_MODEL = "llama-3.3-70b-versatile" # Updated model ID
+    LLM_MODEL = "llama-3.3-70b-versatile"
 else:
-    if not OPENAI_API_KEY:
-        print("WARNING: OPENAI_API_KEY is not set.")
+    # Fallback support if manually set env var
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
     LLM_API_KEY = OPENAI_API_KEY
-    LLM_BASE_URL = None # Default OpenAI URL
+    LLM_BASE_URL = None
     LLM_MODEL = "gpt-4o"
 
 # ScaleDown Settings
