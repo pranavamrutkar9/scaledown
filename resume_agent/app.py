@@ -52,26 +52,36 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.title("📄 Token-Optimized Resume Screening Agent")
+st.title("📄 Resume Screening Agent")
 st.markdown("Powered by **ScaleDown** & OpenAI")
 
 with st.sidebar:
     st.header("Configuration")
     
-    st.info("Using Groq (Free Tier) for Logic.")
-    os.environ["LLM_PROVIDER"] = "groq"
+    # Load .env explicitly from the script's directory
+    from dotenv import load_dotenv, set_key
+    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    load_dotenv(env_path)
+
+    # Check if key is already loaded
+    current_key = os.getenv("GROQ_API_KEY")
+    
+    if current_key:
+        st.success("✅ API Key Loaded")
+        st.markdown("**Provider**: Groq")
+        st.markdown("**Model**: Llama-3.3 70B (Versatile)")
         
-    default_groq = st.session_state.get("GROQ_API_KEY", os.getenv("GROQ_API_KEY", ""))
-    
-    api_key = st.text_input("Groq API Key", type="password", value=default_groq, placeholder="gsk-...")
-    
-    if api_key:
-        os.environ["GROQ_API_KEY"] = api_key
-        st.session_state["GROQ_API_KEY"] = api_key
-        st.success("Groq Key Set!")
+        # Optional: Add a button to clear/reset if needed in future, but for now specific request is to hide it.
+    else:
+        st.warning("⚠️ API Key Missing")
+        api_key = st.text_input("Enter Groq API Key", type="password", placeholder="gsk-...")
         
-    st.markdown("[Get Free Groq Key](https://console.groq.com/keys)")
-    
+        if api_key:
+            os.environ["GROQ_API_KEY"] = api_key
+            set_key(env_path, "GROQ_API_KEY", api_key)
+            st.rerun()
+            
+    st.markdown("---")
     st.info("Upload a resume and paste the job description to get a detailed analysis.")
 
     import importlib

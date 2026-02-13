@@ -1,8 +1,8 @@
-# 📄 Token-Optimized Resume Screening Agent: Technical Documentation
+# 📄 Resume Screening Agent: Technical Documentation
 
 ## 1. Project Overview
 
-This **Token-Optimized Resume Screening Agent** is a production-ready system designed to automate the initial screening of technical candidates. It leverages a hybrid approach combining **Statistical NLP (ScaleDown/SentenceTransformers)** for semantic search and retrieval, and **Large Language Models (Llama-3-70b via Groq)** for high-level reasoning and decision-making.
+This **Resume Screening Agent** is a production-ready system designed to automate the initial screening of technical candidates. It leverages a hybrid approach combining **Statistical NLP (ScaleDown/SentenceTransformers)** for semantic search and retrieval, and **Large Language Models (Llama-3-70b via Groq)** for high-level reasoning and decision-making.
 
 The core philosophy is **"Deterministic Scoring, AI Reasoning"**. We do not let the LLM hallucinate a score. Instead, we calculate a score based on verifiable data points (keyword matches, years of experience, critical penalties) and use the LLM only to explain *why* that score was given.
 

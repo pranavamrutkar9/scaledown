@@ -1,4 +1,4 @@
-# Token-Optimized Resume Screening Agent
+# Resume Screening Agent
 
 A minimal, production-ready Resume Screening Agent powered by **ScaleDown**, **OpenAI**, and **Streamlit**.
 
