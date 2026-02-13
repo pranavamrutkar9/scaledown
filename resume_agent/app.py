@@ -2,20 +2,17 @@ import streamlit as st
 import os
 import sys
 
-# Ensure imports work
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from main import ResumeScreeningAgent
 import config
 
-# Page Config
 st.set_page_config(
     page_title="Resume Screening Agent",
     page_icon="📄",
     layout="wide"
 )
 
-# Custom CSS for "Premium" feel
 st.markdown("""
 <style>
     .main {
@@ -58,15 +55,12 @@ st.markdown("""
 st.title("📄 Token-Optimized Resume Screening Agent")
 st.markdown("Powered by **ScaleDown** & OpenAI")
 
-# Sidebar
 with st.sidebar:
     st.header("Configuration")
     
-    # Configuration
     st.info("Using Groq (Free Tier) for Logic.")
     os.environ["LLM_PROVIDER"] = "groq"
         
-    # Check session state or env
     default_groq = st.session_state.get("GROQ_API_KEY", os.getenv("GROQ_API_KEY", ""))
     
     api_key = st.text_input("Groq API Key", type="password", value=default_groq, placeholder="gsk-...")
@@ -80,11 +74,9 @@ with st.sidebar:
     
     st.info("Upload a resume and paste the job description to get a detailed analysis.")
 
-    # Re-import config to pick up new env vars if changed
     import importlib
     importlib.reload(config)
 
-# Input Section
 col1, col2 = st.columns([1, 1])
 
 with col1:
@@ -99,12 +91,10 @@ if st.button("Evaluate Candidate", type="primary", use_container_width=True):
     if not jd_text or not uploaded_file:
         st.error("Please provide both a Job Description and a Resume.")
     else:
-        # Run Agent
         agent = ResumeScreeningAgent()
         
         with st.spinner("Analyzing Candidate... (Ingesting, Chunking, Retrieving, Matching)"):
             try:
-                # Reset file pointer if needed
                 uploaded_file.seek(0)
                 results = agent.run(uploaded_file, jd_text)
                 
@@ -116,19 +106,17 @@ if st.button("Evaluate Candidate", type="primary", use_container_width=True):
                     match_data = results["match_data"]
                     evaluation = results["evaluation"]
                     
-                    # --- SCORES SECTION ---
                     st.divider()
                     
                     score = match_data["match_score"]
                     confidence = match_data.get("confidence_level", "Medium")
                     
-                    # Color code
                     if score >= 85:
-                        score_color = "#28a745" # Green
+                        score_color = "#28a745"
                     elif score >= 65:
-                        score_color = "#ffc107" # Orange
+                        score_color = "#ffc107"
                     else:
-                        score_color = "#dc3545" # Red
+                        score_color = "#dc3545"
                     
                     col_metrics, col_rec = st.columns(2)
                     
@@ -144,7 +132,6 @@ if st.button("Evaluate Candidate", type="primary", use_container_width=True):
                         </div>
                         """, unsafe_allow_html=True)
                         
-                         # Penalties
                          penalties = match_data.get("applied_penalties", [])
                          if penalties:
                             st.warning("⚠️ Applied Adjustments:")
@@ -166,7 +153,6 @@ if st.button("Evaluate Candidate", type="primary", use_container_width=True):
                         </div>
                         """, unsafe_allow_html=True)
 
-                    # --- SKILLS SECTION ---
                     st.divider()
                     col_a, col_b = st.columns(2)
                     
@@ -190,7 +176,6 @@ if st.button("Evaluate Candidate", type="primary", use_container_width=True):
                         else:
                             st.write("None.")
                     
-                    # --- ANALYSIS SECTION ---
                     st.divider()
                     with st.expander("Detailed Analysis", expanded=True):
                         st.markdown("### 📝 Explanation")

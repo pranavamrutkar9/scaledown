@@ -3,20 +3,14 @@ import json
 from openai import OpenAI
 from typing import Dict, List, Any
 
-# Remove static config import to avoid stale values
-# from resume_agent.config import LLM_API_KEY, LLM_BASE_URL, LLM_MODEL 
-
-class JDProcessor:
-    """Processes Job Descriptions using LLM."""
-    
+class JDProcessor:    
     def __init__(self):
-        # Determine provider and key dynamically at runtime
         self.provider = os.getenv("LLM_PROVIDER", "openai").lower()
         
         if self.provider == "groq":
             api_key = os.getenv("GROQ_API_KEY")
             base_url = "https://api.groq.com/openai/v1"
-            self.model = "llama-3.3-70b-versatile" # Updated model ID
+            self.model = "llama-3.3-70b-versatile"
         else:
             api_key = os.getenv("OPENAI_API_KEY")
             base_url = None
@@ -31,13 +25,6 @@ class JDProcessor:
         )
         
     def process(self, jd_text: str) -> Dict[str, Any]:
-        """
-        Extracts structured data from JD text.
-        Returns: {
-            "required_skills": ["skill1", "skill2"],
-            "role_summary": "Summary string..."
-        }
-        """
         prompt = f"""
         Analyze the following Job Description (JD) and extract structured data for a resume screening system.
         

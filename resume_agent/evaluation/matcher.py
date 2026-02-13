@@ -6,7 +6,6 @@ import os
 import json
 import re
 
-# Ensure config is loaded
 try:
     from resume_agent.config import OPENAI_API_KEY
 except ImportError:
@@ -17,30 +16,23 @@ class SkillMatcher:
         self.retriever = retriever
         
     def match(self, jd_data: Dict[str, Any], resume_text: str) -> Dict[str, Any]:
-        """
-        Matches skills using weighted categories and deterministic penalties.
-        """
         jd_skills = jd_data.get("skills", {})
         exp_range = jd_data.get("experience_range", {})
         
-        # 1. Extract Candidate Experience
         candidate_exp = self._extract_experience(resume_text)
         
-        # 2. Categorized Scoring
         scores = {}
         details = {}
         
-        # Weights
         weights = {
             "core": 0.50,
             "security": 0.15,
             "database": 0.15,
             "devops": 0.10,
             "good_to_have": 0.10,
-            "architecture": 0.0 # Handled via penalty
+            "architecture": 0.0
         }
         
-        # Filter existing categories to normalize weights
         present_categories = [cat for cat in weights if jd_skills.get(cat)]
         if not present_categories:
             return {"error": "No skills found in JD", "match_score": 0, "matched_skills": [], "missing_skills": []}
@@ -48,7 +40,6 @@ class SkillMatcher:
         total_weight = sum(weights[cat] for cat in present_categories)
         normalized_weights = {cat: weights[cat] / total_weight for cat in present_categories}
         
-        # Initial stats collection
         category_stats = {}
         all_missing_for_verification = []
         
@@ -56,7 +47,6 @@ class SkillMatcher:
             skills = jd_skills[category]
             if not skills: continue
             
-            # Initial deterministic check
             points, matched, missing = self._initial_check(skills, resume_text)
             
             category_stats[category] = {
@@ -67,21 +57,17 @@ class SkillMatcher:
                 "weight": normalized_weights[category]
             }
             
-            # Architecture skills are NOT guessed/implied per strict rules
             if category != "architecture":
                 for m in missing:
                     all_missing_for_verification.append(m)
 
-        # 3. Batch LLM Verification for Implied Skills
-        verified_implied = {} # skill_lower -> True
+        verified_implied = {}
         if all_missing_for_verification:
-            # Deduplicate
             unique_missing = list(set(all_missing_for_verification))
             verified_names = self._verify_implied_skills(unique_missing, resume_text)
             for v in verified_names:
                 verified_implied[v.lower()] = True
         
-        # 4. Final Score Calculation
         weighted_score = 0
         all_matched_final = []
         all_missing_final = []
@@ -93,19 +79,16 @@ class SkillMatcher:
             current_points = stats["points"]
             
             for missing_skill in stats["missing"]:
-                # If architecture, strict rule applies (no implied points)
                 if category == "architecture":
                     final_missing.append(missing_skill)
                     continue
                     
-                # Check if verified
                 if verified_implied.get(missing_skill.lower()) or self._is_fuzzy_found(missing_skill, verified_implied):
-                    current_points += 0.4 # Implied point value
+                    current_points += 0.4
                     final_matched.append(f"{missing_skill} (Implied)")
                 else:
                     final_missing.append(missing_skill)
             
-            # Calculate category score
             cat_score = (current_points / stats["total_skills"]) * 100
             weighted_score += cat_score * stats["weight"]
             
@@ -113,21 +96,17 @@ class SkillMatcher:
             all_matched_final.extend(final_matched)
             all_missing_final.extend(final_missing)
 
-        # 5. Penalties
         final_score = weighted_score
         penalties = []
         
-        # A. Security Penalty
         if "security" in details and details["security"]["missing"]:
              final_score *= 0.93
              penalties.append(f"Missing Critical Security Skills (-7%)")
 
-        # B. Architecture Penalty
         if "architecture" in details and details["architecture"]["missing"]:
             final_score *= 0.95
             penalties.append("Missing Architecture Patterns (-5%)")
 
-        # C. Experience Penalty
         if exp_range and candidate_exp > 0:
             min_exp = float(exp_range.get("min", 0))
             max_exp = float(exp_range.get("max", 100))
@@ -139,7 +118,6 @@ class SkillMatcher:
                 final_score *= 0.95
                 penalties.append(f"Overqualified: {candidate_exp}y vs {max_exp}y (-5%)")
 
-        # Determine Confidence
         if final_score >= 85: confidence = "High"
         elif final_score >= 65: confidence = "Medium"
         else: confidence = "Low"
@@ -167,7 +145,6 @@ class SkillMatcher:
                 matched.append(skill)
                 continue
                 
-            # Fuzzy
             if self.retriever.check_similarity(skill, self.retriever.chunks, threshold=0.80):
                  points += 0.8
                  matched.append(f"{skill} (Strong)")
@@ -227,15 +204,12 @@ class SkillMatcher:
         return False
 
     def _extract_experience(self, text: str) -> float:
-        # Regex Heuristic
         try:
             matches = re.findall(r'(\d+)(?:\+)?\s*(?:-|to)?\s*(?:\d+)?\s*years?', text.lower())
             if matches:
-                 # Logic for regex is weak, skip to LLM for reliability
                  pass
         except: pass
         
-        # LLM Extraction
         try:
             provider = os.getenv("LLM_PROVIDER", "openai").lower()
             if provider == "groq":
@@ -284,7 +258,6 @@ class CandidateExplainer:
         
         if not self.client: return {"error": "No API Key"}
 
-        # Format skills for prompt
         skills_text = json.dumps(jd_data.get("skills", {}), indent=2)
         
         prompt = f"""
